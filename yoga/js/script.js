@@ -2,6 +2,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
     'use strict';
 
+    // переменные для блока с ajax
+    let form = document.querySelector('.main-form'),
+        contactForm = document.getElementById('form'),
+        input = form.getElementsByTagName('input'),
+        contactInput = contactForm.getElementsByTagName('input'),
+        statusMessage = document.createElement('div');
+
+        statusMessage.classList.add('status');
+    // переменные для блока с ajax
+
     let tab = document.querySelectorAll('.info-header-tab'),
         info = document.querySelector('.info-header'),
         tabContent = document.querySelectorAll('.info-tabcontent');
@@ -296,6 +306,9 @@ window.addEventListener('DOMContentLoaded', () => {
                         shadow = 10;
                         tabBtns[i].style.boxShadow = `0 0 ${shadow}px #c78030`;
                     }
+
+                    // для ajax      
+                    statusMessage.style.textAlign = 'center';
                 }
 
                 overlay.style.display = 'block';
@@ -314,6 +327,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         document.body.style.overflow = '';
         overlay.classList.remove('activeOverlay');
+        //удаляем сообщение блока ajax
+        if (form.contains(statusMessage)) {
+            form.removeChild(statusMessage);
+        }
+        statusMessage.style.textAlign = 'start';
+
     });
     // скрываем при нажатии в область вне модального окна
     overlay.addEventListener('click', (event) => {
@@ -325,6 +344,12 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             document.body.style.overflow = '';
             overlay.classList.remove('activeOverlay');
+            //удаляем сообщение блока ajax
+            if (form.contains(statusMessage)) {
+                form.removeChild(statusMessage);
+            }
+            statusMessage.style.textAlign = 'start';
+
         }
     });
 
@@ -341,73 +366,55 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Формы AJAX
-    let message = {
-        loading: 'Загрузка...',
-        success: 'Спасибо! Скоро мы с Вами свяжемся',
-        failure: 'Что-то пошло не так...'
-    };
+    function sendForm(form, input) {
+        let message = {
+            loading: 'Загрузка...',
+            success: 'Спасибо! Скоро мы с Вами свяжемся',
+            failure: 'Что-то пошло не так...'
+        };
 
-    let form = document.querySelector('.main-form'),
-        contactForm = document.getElementById('form'),
-        input = form.getElementsByTagName('input'),
-        contactInput = contactForm.getElementsByTagName('input'),
-        statusMessage = document.createElement('div');
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            form.appendChild(statusMessage);
+    
+            let request = new XMLHttpRequest();
+    
+            request.open('POST', 'server.php');
+            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    
+            let formData = new FormData(form);
 
-        statusMessage.classList.add('status');    
+            let obj = {};
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        form.appendChild(statusMessage);
+            formData.forEach((value, key) => {
+                obj[key] = value;
+            });
 
-        let request = new XMLHttpRequest();
-
-        request.open('POST', 'server.php');
-        request.setRequestHeader('Content-Type', 'application/x-www-urlencoded');
-
-        let formData = new FormData(form);
-        request.send(formData);
-
-        request.addEventListener('readystatechange', () => {
-            if (request.readyState < 4) {
-                statusMessage.innerHTML = message.loading;
-            } else if (request.readyState === 4 && request.status == 200) {
-                statusMessage.innerHTML = message.success;
-            } else {
-                statusMessage.innerHTML = message.falure;
+            let json = JSON.stringify(obj);
+            request.send(json);
+    
+            request.addEventListener('readystatechange', () => {
+                if (request.readyState < 4) {
+                    statusMessage.innerHTML = message.loading;
+                } else if (request.readyState === 4 && request.status == 200) {
+                    statusMessage.innerHTML = message.success;
+                } else {
+                    statusMessage.innerHTML = message.falure;
+                }
+            });
+    
+            for (let i = 0; i < input.length; i++) {
+                input[i].value = '';
+                input[i].addEventListener('input', () => {
+                    if (form.contains(statusMessage)) {
+                        form.removeChild(statusMessage);
+                    }
+                });
             }
         });
+    }
 
-        for (let i = 0; i < input.length; i++) {
-            input[i].value = '';
-        }
-    });
+    sendForm(form, input);
+    sendForm(contactForm, contactInput);
 
-    contactForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        contactForm.appendChild(statusMessage);
-        statusMessage.style.color = '#fff';
-        statusMessage.style.marginTop = '15px';
-
-        let request = new XMLHttpRequest();
-
-        request.open('POST', 'server.php');
-        request.setRequestHeader('Content-Type', 'application/x-www-urlencoded');
-
-        let formData = new FormData(contactForm);
-        request.send(formData);
-
-        request.addEventListener('readystatechange', () => {
-            if (request.readyState < 4) {
-                statusMessage.innerHTML = message.loading;
-            } else if (request.readyState === 4 && request.status == 200) {
-                statusMessage.innerHTML = message.success;
-            } else {
-                statusMessage.innerHTML = message.falure;
-            }
-        });
-
-        for (let i = 0; i < contactInput.length; i++) {
-            contactInput[i].value = '';
-        }
-    });
 });

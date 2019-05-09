@@ -529,6 +529,7 @@ header ul li:before {
 .content .contact-form {
   width: 50%;
   padding-left: 40px;
+  position: relative;
 }
 .content .contact-form-title {
   margin-top: 30px;
@@ -654,6 +655,7 @@ header ul li:before {
   background-size: cover;
   padding: 35px 88px 50px 88px;
   color: #fff;
+  position: relative;
 }
 .overlay .popup-form-header {
   padding: 0;
@@ -721,4 +723,13 @@ header ul li:before {
 .days {
   display: block;
   font-size: 30px;
+}
+.status {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  text-align: start;
+  width: 400px;
 }
